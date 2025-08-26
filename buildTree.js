@@ -4,12 +4,13 @@ function buildTree(items) {
         const key = item.parentId
         if(!childrenMap.has(key)) {
             childrenMap.set(key, [])
-        } 
+        }
         childrenMap.get(key).push(item)
     }
     console.log('map', childrenMap);
-    
-    const root = items.find(item => !item.parentId)
+
+    const root = items.find(item => item.parentId === null)
+    if (!root) return [];
 
     function attachChildren(node) {
         console.log('current node', node);
@@ -43,10 +44,10 @@ console.dir(buildTree(input), {depth: null})
     id: 1,
     name: 'A',
     children: [
-      { 
-        id: 2, 
+      {
+        id: 2,
         name: 'B',
-        children: [{ id:4, name:'D' }] 
+        children: [{ id:4, name:'D' }]
       },
       { id: 3, name: 'C' }
     ]
