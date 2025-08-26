@@ -1,4 +1,4 @@
-function buildTree(items) {
+function buildTreeByRecursion(items) {
     const childrenMap = new Map()
     for (let item of items) {
         const key = item.parentId
@@ -28,6 +28,24 @@ function buildTree(items) {
     return [attachChildren(root)]
 }
 
+function buildTreeByIteration(items) {
+    const nodeMap = new Map()
+    items.forEach(item => nodeMap.set(item.id, {id: item.id, name: item.name, children: []}))
+    const root = []
+    items.forEach(item => {
+        if (item.parentId === null) {
+            root.push(nodeMap.get(item.id))
+        }
+        else {
+            const parent = nodeMap.get(item.parentId)
+            if (parent) {
+                parent.children.push(nodeMap.get(item.id))
+            }
+        }
+    })
+
+    return root;
+}
 // 输入
 const input = [
   { id: 1, name: 'A', parentId: null },
@@ -36,7 +54,8 @@ const input = [
   { id: 4, name: 'D', parentId: 2 }
 ];
 
-console.dir(buildTree(input), {depth: null})
+console.dir(buildTreeByRecursion(input), {depth: null})
+console.dir(buildTreeByIteration(input), {depth: null})
 
 /* 期望输出：
 [
