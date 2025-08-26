@@ -46,6 +46,39 @@ function buildTreeByIteration(items) {
 
     return root;
 }
+
+function buildTreeByStack(items) {
+    const childrenMap = new Map()
+    for(let item of items) {
+        if (!childrenMap.has(item.parentId)) {
+            childrenMap.set(item.parentId, [])
+        }
+        childrenMap.get(item.parentId).push(item)
+    }
+
+    const root = items.find(item => item.parentId === null)
+    const rootObj = {
+        id: root.id,
+        name: root.name,
+    }
+    const stack = [rootObj]
+    while (stack.length > 0) {
+        const currentObj = stack.pop();
+        const children = childrenMap.get(currentObj.id)
+        if (!!children){
+            currentObj.children = []
+            children.forEach(child => {
+                const childObj = {
+                    id: child.id,
+                    name: child.name,
+                }
+                currentObj.children.push(childObj)
+                stack.push(childObj)
+            })
+        }
+    }
+    return [rootObj]
+}
 // 输入
 const input = [
   { id: 1, name: 'A', parentId: null },
@@ -56,6 +89,7 @@ const input = [
 
 console.dir(buildTreeByRecursion(input), {depth: null})
 console.dir(buildTreeByIteration(input), {depth: null})
+console.dir(buildTreeByStack(input), {depth: null})
 
 /* 期望输出：
 [
