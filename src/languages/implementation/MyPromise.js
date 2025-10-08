@@ -60,17 +60,9 @@ class MyPromise {
     }
 }
 
-const myPromise = new MyPromise((resolve) => {
-    console.log('executor this: ', this)
-    resolve('success')
-})
-myPromise.then((value) => console.log('my myPromise value: ', value))
-const myPromise1 = new MyPromise((resolve, reject) => {
-    reject('fail')
-})
-myPromise1.then(null,(value) => console.log('my myPromise: ', value))
-
 const promise = new Promise((resolve, reject) => {
     reject('fail')
 })
 promise.then(null, (error) => console.log('promise: ', error))
+
+export {MyPromise}
