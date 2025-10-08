@@ -41,30 +41,28 @@ describe('MyPromise then chain', () => {
             .then(
                 null,
                 (err) => {
-                    console.log('error', err)
                     expect(err.message).toBe('Boom!');
                 }
             );
     });
 
-    // test('should propagate rejection down the chain', () => {
-    //     return new MyPromise((_, reject) => reject('Fail'))
-    //         .then(() => 'ok') // skipped
-    //         .then(
-    //             null,
-    //             (err) => {
-    //                 expect(err).toBe('Fail');
-    //             }
-    //         );
-    // });
-    //
-    // test('should support value passthrough when no onFulfilled is provided', () => {
-    //     return new MyPromise((resolve) => resolve('A'))
-    //         .then() // no callbacks
-    //         .then((v) => {
-    //             expect(v).toBe('A');
-    //         });
-    // });
+    test('should support value passthrough when no onFulfilled is provided', () => {
+        return new MyPromise((resolve) => resolve('A'))
+            .then() // no callbacks
+            .then((v) => {
+                expect(v).toBe('A');
+            });
+    });
+    test('should propagate rejection down the chain', () => {
+        return new MyPromise((_, reject) => reject('Fail'))
+            .then(() => 'ok') // skipped
+            .then(
+                null,
+                (err) => {
+                    expect(err).toBe('Fail');
+                }
+            );
+    });
     //
     // test('should handle nested Promise returned from then', () => {
     //     return new MyPromise((resolve) => resolve(3))
