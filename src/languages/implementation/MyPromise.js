@@ -17,7 +17,8 @@ class MyPromise {
         this.onRejectedCallback = null
 
         /* resolve & reject 要绑定新建的Promise实例，因此：
-        *
+        *  要用箭头函数，使this指向当前实例
+        *  定义在constructor里可以与constructor共享闭包作用域
         * */
         const resole = (value) => {
             console.log('resole in constructor, this: ', this)
