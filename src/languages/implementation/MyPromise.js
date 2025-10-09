@@ -60,18 +60,27 @@ export class MyPromise {
         onRejected = typeof onRejected === 'function' ? onRejected : (err) => {
             throw err
         }
+
+        function resolvePromise(result, resolve, reject) {
+            if (result instanceof MyPromise) {
+                result.then(resolve, reject)
+            } else {
+                resolve(result)
+            }
+        }
+
         return new MyPromise((resolve, reject) => {
             if (this.state === State.resolved) {
                 try {
                     let result = onFulfilled(this.value)
-                    resolve(result)
+                    resolvePromise(result, resolve, reject)
                 } catch (error) {
                     reject(error)
                 }
             } else if (this.state === State.rejected) {
                 try {
                     let result = onRejected(this.reason)
-                    resolve(result)
+                    resolvePromise(result, resolve, reject)
                 } catch (error) {
                     reject(error)
                 }
@@ -79,7 +88,7 @@ export class MyPromise {
                 this.onFulFillCallback.push(() => {
                     try {
                         let result = onFulfilled(this.value)
-                        resolve(result)
+                        resolvePromise(result, resolve, reject)
                     } catch (err) {
                         reject(err)
                     }
@@ -87,7 +96,7 @@ export class MyPromise {
                 this.onRejectedCallback.push(() => {
                     try {
                         let result = onRejected(this.reason)
-                        resolve(result)
+                        resolvePromise(result, resolve, reject)
                     } catch (err) {
                         reject(err)
                     }
