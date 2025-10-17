@@ -82,18 +82,112 @@ describe('MyPromise then chain', () => {
                 expect(v).toBe('error handled');
             });
     });
-    //
-    // test('should detect chaining cycle (promise2 === x)', () => {
-    //     const p = new MyPromise((resolve) => resolve(1));
-    //     const p2 = p.then(() => p2); // self-reference
-    //     return p2.then(
-    //         () => {
-    //             throw new Error('Should not resolve');
-    //         },
-    //         (err) => {
-    //             expect(err).toBeInstanceOf(TypeError);
-    //             expect(err.message).toMatch(/cycle/i);
-    //         }
-    //     );
-    // });
+
+    test('should detect chaining cycle (promise2 === x)', () => {
+        const p = new MyPromise((resolve) => resolve(1));
+        const p2 = p.then(() => p2);
+        return p2.then(
+            () => {
+                throw new Error('Should not resolve');
+            },
+            (err) => {
+                expect(err).toBeInstanceOf(TypeError);
+                expect(err.message).toMatch(/cycle/i);
+            }
+        );
+
+    });
+});
+
+describe('MyPromise asynchronous behavior', () => {
+    test('then should be called asynchronously even for immediate resolve', (done) => {
+        const order = [];
+        const p = new MyPromise((resolve) => resolve(1));
+        order.push('sync-resolve');
+        p.then((val) => {
+            order.push('then-callback:'+ val);
+            expect(order).toEqual(['sync-resolve', 'then-callback:1']);
+            done();
+        });
+        order.push('after-then');
+    });
+
+    test('chain of thens should execute in correct async order', (done) => {
+        const result = [];
+        new MyPromise((resolve) => resolve(1))
+            .then((v) => {
+                result.push(v);
+                return v + 1;
+            })
+            .then((v) => {
+                result.push(v);
+                expect(result).toEqual([1, 2]);
+                done();
+            });
+    });
+
+    test('should handle async resolve (setTimeout)', (done) => {
+        new MyPromise((resolve) => {
+            setTimeout(() => resolve('ok'), 50);
+        }).then((v) => {
+            expect(v).toBe('ok');
+            done();
+        });
+    });
+
+    test('should handle async reject (setTimeout)', (done) => {
+        new MyPromise((_, reject) => {
+            setTimeout(() => reject('fail'), 50);
+        })
+            .then(null, (err) => {
+                expect(err).toBe('fail');
+                done();
+            });
+    });
+
+    test('multiple thens on same promise should all fire asynchronously', (done) => {
+        const calls = [];
+        const p = new MyPromise((resolve) => resolve('value'));
+        p.then((v) => calls.push('A:' + v));
+        p.then((v) => calls.push('B:' + v));
+        setTimeout(() => {
+            expect(calls).toEqual(['A:value', 'B:value']);
+            done();
+        }, 10);
+    });
+
+    test('async thrown error in onFulfilled should reject next promise', (done) => {
+        new MyPromise((resolve) => resolve('ok'))
+            .then(() => {
+                queueMicrotask(() => {
+                    throw new Error('boom');
+                });
+            })
+            .then(
+                () => {
+                    throw new Error('Should not resolve');
+                },
+                (err) => {
+                    expect(err).toBeInstanceOf(Error);
+                    expect(err.message).toBe('boom');
+                    done();
+                }
+            );
+    });
+
+    test('should work when mixing sync and async then', (done) => {
+        const result = [];
+        const p = new MyPromise((resolve) => {
+            queueMicrotask(() => resolve(1));
+        });
+
+        p.then((v) => {
+            result.push(v);
+            return v + 1;
+        }).then((v) => {
+            result.push(v);
+            expect(result).toEqual([1, 2]);
+            done();
+        });
+    });
 });

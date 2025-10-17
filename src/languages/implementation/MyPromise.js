@@ -61,7 +61,10 @@ export class MyPromise {
             throw err
         }
 
-        function resolvePromise(result, resolve, reject) {
+        function resolvePromise(newPromise, result, resolve, reject) {
+            if(newPromise === result) {
+                return reject(new TypeError('Chaining cycle detected for promise'))
+            }
             if (result instanceof MyPromise) {
                 result.then(resolve, reject)
             } else {
@@ -69,26 +72,30 @@ export class MyPromise {
             }
         }
 
-        return new MyPromise((resolve, reject) => {
+        const newPromise = new MyPromise((resolve, reject) => {
             if (this.state === State.resolved) {
-                try {
-                    let result = onFulfilled(this.value)
-                    resolvePromise(result, resolve, reject)
-                } catch (error) {
-                    reject(error)
-                }
+                queueMicrotask(() => {
+                    try {
+                        let result = onFulfilled(this.value)
+                        resolvePromise(newPromise, result, resolve, reject)
+                    } catch (error) {
+                        reject(error)
+                    }
+                })
             } else if (this.state === State.rejected) {
-                try {
-                    let result = onRejected(this.reason)
-                    resolvePromise(result, resolve, reject)
-                } catch (error) {
-                    reject(error)
-                }
+                queueMicrotask(() => {
+                    try {
+                        let result = onRejected(this.reason)
+                        resolvePromise(newPromise, result, resolve, reject)
+                    } catch (error) {
+                        reject(error)
+                    }
+                })
             } else {
                 this.onFulFillCallback.push(() => {
                     try {
                         let result = onFulfilled(this.value)
-                        resolvePromise(result, resolve, reject)
+                        resolvePromise(newPromise,result, resolve, reject)
                     } catch (err) {
                         reject(err)
                     }
@@ -96,13 +103,15 @@ export class MyPromise {
                 this.onRejectedCallback.push(() => {
                     try {
                         let result = onRejected(this.reason)
-                        resolvePromise(result, resolve, reject)
+                        resolvePromise(newPromise,result, resolve, reject)
                     } catch (err) {
                         reject(err)
                     }
                 })
             }
         })
+
+        return newPromise
     }
 }
 
