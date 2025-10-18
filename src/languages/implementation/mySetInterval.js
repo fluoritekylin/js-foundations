@@ -1,12 +1,30 @@
-function mySetInterval(fn, time) {
+function mySetInterval(fn, delay) {
+    let timerId = null
+    let isCleared = false
+
     function tick() {
+        if(isCleared) return
+        const time = new Date()
+        console.log('interval: ', time)
         fn()
-        setTimeout(tick, time)
+        timerId = setTimeout(tick, delay)
     }
-    setTimeout(tick, time)
+    timerId = setTimeout(tick, delay)
+
+    return (() => {
+        isCleared = true
+        clearTimeout(timerId)
+    })
 }
 
-// mySetInterval(() => console.log(250), 250)
+function countdownByMyInterval(count) {
+    return mySetInterval(() => {
+        console.log(count--)
+    }, 1000)
+}
+
+const stop = countdownByMyInterval(3)
+setTimeout(stop, 4000)
 
 const countdown = (n) => {
     if(n === 0) return
