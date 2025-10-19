@@ -145,35 +145,34 @@ describe('MyPromise asynchronous behavior', () => {
             });
     });
 
-    test('multiple thens on same promise should all fire asynchronously', (done) => {
+    test('multiple thens on same promise should all fire asynchronously', async () => {
         const calls = [];
         const p = new MyPromise((resolve) => resolve('value'));
         p.then((v) => calls.push('A:' + v));
         p.then((v) => calls.push('B:' + v));
-        setTimeout(() => {
-            expect(calls).toEqual(['A:value', 'B:value']);
-            done();
-        }, 10);
+
+        await p
+        expect(calls).toEqual(['A:value', 'B:value']);
     });
 
-    test('async thrown error in onFulfilled should reject next promise', (done) => {
-        new MyPromise((resolve) => resolve('ok'))
+    test('async thrown error in onFulfilled should reject next promise', async () => {
+        const chain = new MyPromise((resolve) => resolve('ok'))
             .then(() => {
-                queueMicrotask(() => {
-                    throw new Error('boom');
+                return new MyPromise((_, reject) => {
+                    queueMicrotask(() => reject(new Error('boom')));
                 });
-            })
-            .then(
-                () => {
-                    throw new Error('Should not resolve');
-                },
-                (err) => {
-                    expect(err).toBeInstanceOf(Error);
-                    expect(err.message).toBe('boom');
-                    done();
-                }
-            );
+            });
+
+        await expect(chain).rejects.toThrow('boom');
     });
+
+    test('sync throw in onFulfilled should reject next promise', async () => {
+        const p = MyPromise.resolve('ok').then(() => {
+            throw new Error('boom');
+        });
+        await expect(p).rejects.toThrow('boom');
+    });
+
 
     test('should work when mixing sync and async then', (done) => {
         const result = [];
