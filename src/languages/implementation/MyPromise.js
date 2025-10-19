@@ -191,27 +191,31 @@ export class MyPromise {
         let count = 0
         return new MyPromise((resolve, reject) => {
             if (length === 0) return resolve([])
-            promises.forEach((promise, index) => {
-                MyPromise.resolve(promise).then((val) => {
-                    count++
-                    result[index] = {
-                        status: Status.fulfilled,
-                        value: val
-                    }
-                    if (count === length) {
-                        resolve(result)
-                    }
-                }, (err) => {
-                    count++
-                    result[index] = {
-                        status: Status.rejected,
-                        reason: err
-                    }
-                    if(count === length) {
-                        resolve(result)
-                    }
+
+            const checkDone = () => {
+                if (++count === length) {
+                    resolve(result)
+                }
+            }
+            try {
+                promises.forEach((promise, index) => {
+                    MyPromise.resolve(promise).then((val) => {
+                        result[index] = {
+                            status: Status.fulfilled,
+                            value: val
+                        }
+                        checkDone();
+                    }, (err) => {
+                        result[index] = {
+                            status: Status.rejected,
+                            reason: err
+                        }
+                        checkDone()
+                    })
                 })
-            })
+            } catch (err) {
+                reject(err)
+            }
         })
     }
 }
