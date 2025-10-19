@@ -130,11 +130,16 @@ export class MyPromise {
     }
 
     static all(values) {
+        if (!Array.isArray(values)) {
+            return MyPromise.reject(new TypeError('MyPromise.all accepts only iterable arrays'))
+        }
         const length = values.length;
-        const result = Array.of(length).fill(undefined)
+        const result =  new Array(length)
         let completed = 0
         return new MyPromise((resolve, reject) => {
-            if (length === 0) resolve([])
+            if (length === 0) {
+                return resolve([])
+            }
             for (let i = 0; i < length; i++) {
                 MyPromise.resolve(values[i]).then((val) => {
                     result[i] = val
