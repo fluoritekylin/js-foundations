@@ -221,3 +221,32 @@ describe('static method resolve basic behavior', () => {
         await p
     });
 });
+
+describe('static method reject basic behavior', () => {
+    test('should reject with a normal reason', async () => {
+        const p = MyPromise.reject('error');
+        await expect(p).rejects.toBe('error');
+    });
+
+    test('should reject with undefined if no reason given', async () => {
+        const p = MyPromise.reject();
+        await expect(p).rejects.toBeUndefined();
+    });
+
+    test('should create a new MyPromise even if reason is a MyPromise', async () => {
+        const inner = new MyPromise((resolve) => resolve('ok'));
+        const p = MyPromise.reject(inner);
+        expect(p).not.toBe(inner); // ✅ reject 总是创建新实例
+        await expect(p).rejects.toBe(inner);
+    });
+
+    test('should call then reject handler', async () => {
+        const p = MyPromise.reject('fail');
+        const result = await p.then(
+            () => 'resolved',
+            (err) => err
+        );
+        expect(result).toBe('fail');
+    });
+});
+

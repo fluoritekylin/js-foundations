@@ -43,3 +43,6 @@ Promise.resolve('resolve').then((value) => {
     return new Promise(() => {})
 })
 .then((val) => console.log('second then:', val))
+
+Promise.reject(new Promise((resolve) => resolve(1)))
+.catch((err) => console.log('reject Promise: ', err))

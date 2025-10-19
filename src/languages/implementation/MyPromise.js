@@ -122,17 +122,10 @@ export class MyPromise {
             resolve(value)
         })
     }
-}
 
-const myPromise = new MyPromise((resolve) => {
-    resolve('success')
-})
-myPromise
-    .then(() => {
-        throw new Error('Boom!');
-    })
-    .then(null,
-        (err) => {
-            console.log('error', err.message)
-        }
-    );
+    static reject(reason) {
+        return new Promise((resolve, reject) => {
+            reject(reason)
+        })
+    }
+}
