@@ -151,4 +151,32 @@ export class MyPromise {
             }
         })
     }
+
+    static race(values) {
+        return new MyPromise((resolve, reject) => {
+            //没有settled就一直是pending状态
+            if (!values.length) return
+            let settled = false
+            try {
+                values.forEach((promise) => {
+                    MyPromise.resolve(promise)
+                        .then((val) => {
+                            if (!settled) {
+                                settled = true
+                                 resolve(val)
+                            }
+                        }, (reason) => {
+                            if(!settled) {
+                                settled = true
+                                reject(reason)
+                            }
+
+                        })
+                })
+            } catch (err) {
+                reject(err)
+                settled = true
+            }
+        })
+    }
 }

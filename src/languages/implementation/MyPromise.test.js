@@ -270,3 +270,32 @@ describe('static method all', () => {
         await expect(MyPromise.all([p1, p2])).rejects.toBe('error');
     });
 });
+
+describe('MyPromise.race basic behavior', () => {
+    test('should resolve with the first settled value', async () => {
+        const p1 = new MyPromise((r) => setTimeout(() => r('slow'), 50));
+        const p2 = new MyPromise((r) => setTimeout(() => r('fast'), 10));
+        const result = await MyPromise.race([p1, p2]);
+        expect(result).toBe('fast');
+    });
+
+    test('should reject if the first settled promise rejects', async () => {
+        const p1 = new MyPromise((r) => setTimeout(() => r('ok'), 50));
+        const p2 = new MyPromise((_, rej) => setTimeout(() => rej('fail'), 10));
+        await expect(MyPromise.race([p1, p2])).rejects.toBe('fail');
+    });
+
+    test('should resolve immediately if given non-promise value', async () => {
+        const result = await MyPromise.race([42, new MyPromise((r) => setTimeout(() => r(100), 10))]);
+        expect(result).toBe(42);
+    });
+
+    test('should stay pending with an empty array', async () => {
+        let settled = false;
+        const p = MyPromise.race([]);
+        p.then(() => (settled = true), () => (settled = true));
+        await new Promise((r) => setTimeout(r, 30));
+        expect(settled).toBe(false);
+    });
+});
+
