@@ -128,4 +128,20 @@ export class MyPromise {
             reject(reason)
         })
     }
+
+    static all(values) {
+        const length = values.length;
+        const result = Array.of(length).fill(undefined)
+        let completed = 0
+        return new MyPromise((resolve, reject) => {
+            if (length === 0) resolve([])
+            for (let i=0; i<length; i++) {
+                MyPromise.resolve(values[i]).then((val) => {
+                    result[i] = val
+                    completed++
+                    if(completed === length) resolve(result)
+                })
+            }
+        })
+    }
 }

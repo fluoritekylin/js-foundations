@@ -250,3 +250,18 @@ describe('static method reject basic behavior', () => {
     });
 });
 
+describe('static method all', () => {
+    test('Promise.all resolves all values in order', async () => {
+        const p1 = new MyPromise((r) => setTimeout(() => r(1), 30));
+        const p2 = new MyPromise((r) => setTimeout(() => r(2), 10));
+        const p3 = 3; // 普通值
+        const result = await MyPromise.all([p1, p2, p3]);
+        expect(result).toEqual([1, 2, 3]);
+    });
+
+    test('Promise.all with empty array resolves immediately', async () => {
+        const result = await MyPromise.all([]);
+        expect(result).toEqual([]);
+    });
+
+});
