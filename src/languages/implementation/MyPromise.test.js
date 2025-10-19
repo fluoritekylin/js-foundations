@@ -191,3 +191,33 @@ describe('MyPromise asynchronous behavior', () => {
         });
     });
 });
+
+describe('static method resolve basic behavior', () => {
+    test('should resolve with a normal value', async () => {
+        const p = MyPromise.resolve(42);
+        const result = await p;
+        expect(result).toBe(42);
+    });
+
+    test('should resolve with undefined when no argument', async () => {
+        const p = MyPromise.resolve();
+        const result = await p;
+        expect(result).toBeUndefined();
+    });
+
+    test('should return the same MyPromise instance if argument is a MyPromise', async () => {
+        const inner = new MyPromise((resolve) => resolve('ok'));
+        const outer = MyPromise.resolve(inner);
+        expect(outer).toBe(inner); // ✅ 不创建新的实例
+    });
+
+    test('should resolve asynchronously when chained',  async () => {
+        let flag = false;
+        const p =MyPromise.resolve(1).then((v) => {
+            expect(flag).toBe(true); // 验证异步
+            expect(v).toBe(1);
+        });
+        flag = true;
+        await p
+    });
+});

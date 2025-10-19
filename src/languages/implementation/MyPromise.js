@@ -113,6 +113,15 @@ export class MyPromise {
 
         return newPromise
     }
+    static resolve(value) {
+        if (value instanceof MyPromise) {
+            /*根据实现规范，如果参数是一个promise，原封不动地返回这个promise*/
+            return value
+        }
+        return new Promise((resolve, reject) => {
+            resolve(value)
+        })
+    }
 }
 
 const myPromise = new MyPromise((resolve) => {
@@ -122,17 +131,6 @@ myPromise
     .then(() => {
         throw new Error('Boom!');
     })
-    .then(null,
-        (err) => {
-            console.log('error', err.message)
-        }
-    );
-const promise = new Promise((resolve, reject) => {
-    resolve('success')
-})
-promise.then(() => {
-    throw new Error('Boom!');
-})
     .then(null,
         (err) => {
             console.log('error', err.message)
