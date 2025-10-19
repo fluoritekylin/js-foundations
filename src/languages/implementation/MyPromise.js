@@ -135,11 +135,13 @@ export class MyPromise {
         let completed = 0
         return new MyPromise((resolve, reject) => {
             if (length === 0) resolve([])
-            for (let i=0; i<length; i++) {
+            for (let i = 0; i < length; i++) {
                 MyPromise.resolve(values[i]).then((val) => {
                     result[i] = val
                     completed++
-                    if(completed === length) resolve(result)
+                    if (completed === length) resolve(result)
+                }, (reason) => {
+                    reject(reason)
                 })
             }
         })

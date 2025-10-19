@@ -264,4 +264,9 @@ describe('static method all', () => {
         expect(result).toEqual([]);
     });
 
+    test('Promise.all rejects immediately when one rejects', async () => {
+        const p1 = new MyPromise((r) => setTimeout(() => r(1), 30));
+        const p2 = new MyPromise((_, rej) => setTimeout(() => rej('error'), 10));
+        await expect(MyPromise.all([p1, p2])).rejects.toBe('error');
+    });
 });
