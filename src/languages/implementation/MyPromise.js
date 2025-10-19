@@ -179,4 +179,39 @@ export class MyPromise {
             }
         })
     }
+
+    static allSettled(promises) {
+        const length = promises.length
+        const result = new Array(length)
+        const Status = {
+            fulfilled: 'fulfilled',
+            rejected: 'rejected'
+        }
+
+        let count = 0
+        return new MyPromise((resolve, reject) => {
+            if (length === 0) return resolve([])
+            promises.forEach((promise, index) => {
+                MyPromise.resolve(promise).then((val) => {
+                    count++
+                    result[index] = {
+                        status: Status.fulfilled,
+                        value: val
+                    }
+                    if (count === length) {
+                        resolve(result)
+                    }
+                }, (err) => {
+                    count++
+                    result[index] = {
+                        status: Status.rejected,
+                        reason: err
+                    }
+                    if(count === length) {
+                        resolve(result)
+                    }
+                })
+            })
+        })
+    }
 }

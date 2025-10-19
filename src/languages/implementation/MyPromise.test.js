@@ -299,3 +299,60 @@ describe('MyPromise.race basic behavior', () => {
     });
 });
 
+import { MyPromise } from './MyPromise';
+
+describe('MyPromise.allSettled basic behavior', () => {
+    test('should resolve after all promises settle (mixed fulfill/reject)', async () => {
+        const p1 = MyPromise.resolve(1);
+        const p2 = MyPromise.reject('error');
+        const p3 = new MyPromise((r) => setTimeout(() => r(3), 10));
+
+        const result = await MyPromise.allSettled([p1, p2, p3]);
+        expect(result).toEqual([
+            { status: 'fulfilled', value: 1 },
+            { status: 'rejected', reason: 'error' },
+            { status: 'fulfilled', value: 3 },
+        ]);
+    });
+
+    test('should resolve empty array immediately', async () => {
+        const result = await MyPromise.allSettled([]);
+        expect(result).toEqual([]);
+    });
+
+    test('should handle non-promise values', async () => {
+        const result = await MyPromise.allSettled([42, 'ok']);
+        expect(result).toEqual([
+            { status: 'fulfilled', value: 42 },
+            { status: 'fulfilled', value: 'ok' },
+        ]);
+    });
+
+    test('should handle all rejections correctly', async () => {
+        const p1 = MyPromise.reject('fail1');
+        const p2 = MyPromise.reject('fail2');
+        const result = await MyPromise.allSettled([p1, p2]);
+        expect(result).toEqual([
+            { status: 'rejected', reason: 'fail1' },
+            { status: 'rejected', reason: 'fail2' },
+        ]);
+    });
+
+    test('should not short-circuit when one rejects', async () => {
+        const logs = [];
+        const p1 = MyPromise.reject('bad');
+        const p2 = new MyPromise((r) => {
+            setTimeout(() => {
+                logs.push('done');
+                r('ok');
+            }, 30);
+        });
+        const result = await MyPromise.allSettled([p1, p2]);
+        expect(logs).toEqual(['done']); // ✅ 第二个仍执行完
+        expect(result).toEqual([
+            { status: 'rejected', reason: 'bad' },
+            { status: 'fulfilled', value: 'ok' },
+        ]);
+    });
+});
+
