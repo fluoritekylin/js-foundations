@@ -219,3 +219,15 @@ export class MyPromise {
         })
     }
 }
+
+export function allSettledByAll(promises) {
+    return MyPromise.all(promises.map((promise) =>
+        MyPromise.resolve(promise)
+            .then((value) => ({
+                status: 'fulfilled',
+                value
+            }), (reason) => ({
+                status: 'rejected',
+                reason
+            }))))
+}

@@ -1,4 +1,4 @@
-import {MyPromise} from "./MyPromise";
+import {allSettledByAll, MyPromise} from "./MyPromise";
 
 describe('MyPromise constructor', () => {
     it('should resolve with correct value', async () => {
@@ -356,3 +356,17 @@ describe('MyPromise.allSettled basic behavior', () => {
     });
 });
 
+describe('implement allSettled by MyPromise.all', () => {
+    test('should resolve after all promises settle (mixed fulfill/reject)', async () => {
+        const p1 = MyPromise.resolve(1);
+        const p2 = MyPromise.reject('error');
+        const p3 = new MyPromise((r) => setTimeout(() => r(3), 10));
+
+        const result = await allSettledByAll([p1, p2, p3]);
+        expect(result).toEqual([
+            { status: 'fulfilled', value: 1 },
+            { status: 'rejected', reason: 'error' },
+            { status: 'fulfilled', value: 3 },
+        ]);
+    });
+});
