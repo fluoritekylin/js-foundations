@@ -51,4 +51,30 @@ function toTreeByStack(array: Node[]) {
     return [root]
 }
 
+function toTreeByIteration(array: Node[]): TreeNode[] {
+    const nodeMap = new Map<number|null, TreeNode>()
+    const root: TreeNode[] = []
+    array.forEach((node) => {
+        nodeMap.set(node.id, {
+            id: node.id,
+            name: node.name,
+        })
+    })
+
+    array.forEach(node => {
+        if (node.parentId === null) {
+            root.push(nodeMap.get(node.id)!)
+        } else {
+            const parent = nodeMap.get(node.parentId)!
+            if (!parent.children) {
+                parent.children = []
+            }
+            parent.children.push(nodeMap.get(node.id)!)
+        }
+    })
+
+    return root
+
+}
 console.dir(toTreeByStack(input), {depth: null})
+console.dir(toTreeByIteration(input), {depth: null})
