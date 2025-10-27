@@ -1,15 +1,26 @@
 export function versionSort(input: string[]):string[] {
-    const splits = input.map((version) => version.split('.'));
-    const compareArrayFn = (a, b) => {
-        const len = Math.max(a.length, b.length)
+    enum PreRelease {
+        alpha=0,
+        beta=1,
+        rc=2,
+    }
+    const compareArrayFn = (a: string[], b: string[]) => {
+        const [coreA, preOrderA] = a.split('-', 2)
+        const [coreB, preOrderB] = b.split('-', 2)
+        console.log('-----pre order', preOrderA, preOrderB)
+        const arrA = coreA.split('.')
+        const arrB = coreB.split('.')
+        const len = Math.max(arrA.length, arrB.length)
         for (let i=0;i<len;i++) {
-            const numA = Number(a[i] ?? 0)
-            const numB = Number(b[i] ?? 0)
+            const numA = Number(arrA[i] ?? 0)
+            const numB = Number(arrB[i] ?? 0)
             if (numA - numB !==0) return numA - numB
         }
-        return 0
+        if (!preOrderA && !preOrderB) return 0
+        if (!preOrderA) return 1
+        if (!preOrderB) return -1
+        return PreRelease[preOrderA] - PreRelease[preOrderB]
     };
 
-    splits.sort(compareArrayFn)
-    return splits.map((item) => item.join('.'))
+    return  input.sort((va, vb) => compareArrayFn(va,vb))
 }
